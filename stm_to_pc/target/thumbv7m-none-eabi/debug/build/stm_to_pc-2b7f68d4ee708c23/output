@@ -1,0 +1,2 @@
+cargo:rustc-link-search=D:\Vtu\stm_to_pc\target\thumbv7m-none-eabi\debug\build\stm_to_pc-2b7f68d4ee708c23\out
+cargo:rerun-if-changed=memory.ld

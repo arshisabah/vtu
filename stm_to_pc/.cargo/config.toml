@@ -1,0 +1,12 @@
+[build]
+target = "thumbv7m-none-eabi"
+
+[target.thumbv7m-none-eabi]
+# Use download instead of run to avoid reset issues
+runner = "probe-rs download --chip stm32f103rb --speed 100"
+rustflags = [
+  "-C", "link-arg=-Tlink.x",
+]
+
+[unstable]
+build-std = ["core"]

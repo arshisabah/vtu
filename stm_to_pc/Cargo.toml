@@ -1,0 +1,23 @@
+[package]
+name = "stm_to_pc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+embedded-hal = "0.2"
+nb = "1.1"
+panic-halt = "0.2"
+
+[dependencies.stm32f1xx-hal]
+version = "0.10"
+features = ["stm32f103", "rt", "medium"]
+
+[profile.release]
+codegen-units = 1
+debug = true
+lto = true
+
+[package.metadata.cortex-m-rt]
+memory-ld = "memory.ld"
