@@ -1,0 +1,34 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   0.151951900s  INFO prepare_target{force=false package_id=stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5) target="stm32f103-gpio"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5)/Check { test: true }/TargetInner { name: "stm32f103-gpio", doc: true, ..: with_path("D:\\Vtu-Project\\task5\\src\\main.rs", Edition2021) }
+   0.152005100s  INFO prepare_target{force=false package_id=stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5) target="stm32f103-gpio"}: cargo::core::compiler::fingerprint:     err: failed to read `D:\Vtu-Project\task5\target\thumbv7m-none-eabi\debug\.fingerprint\stm32f103-gpio-89b8b0e81d78ab42\test-bin-stm32f103-gpio`
+
+Caused by:
+    The system cannot find the file specified. (os error 2)
+
+Stack backtrace:
+   0: git_midx_writer_dump
+   1: git_midx_writer_dump
+   2: git_midx_writer_dump
+   3: git_midx_writer_dump
+   4: git_filter_source_repo
+   5: git_filter_source_path
+   6: git_filter_source_path
+   7: git_filter_source_path
+   8: git_filter_source_path
+   9: git_filter_source_repo
+  10: git_filter_source_repo
+  11: git_filter_source_repo
+  12: git_filter_source_repo
+  13: git_filter_source_repo
+  14: <unknown>
+  15: <unknown>
+  16: git_midx_writer_dump
+  17: git_filter_source_repo
+  18: git_midx_writer_dump
+  19: BaseThreadInitThunk
+  20: RtlUserThreadStart
+    Checking stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5)
+error: could not compile `stm32f103-gpio` (bin "stm32f103-gpio" test) due to 1 previous error; 1 warning emitted
