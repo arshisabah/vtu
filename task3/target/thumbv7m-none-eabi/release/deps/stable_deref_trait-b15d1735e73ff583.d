@@ -1,0 +1,7 @@
+D:\Vtu-Project\task3\target\thumbv7m-none-eabi\release\deps\stable_deref_trait-b15d1735e73ff583.d: C:\Users\arshi\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stable_deref_trait-1.2.1\src\lib.rs
+
+D:\Vtu-Project\task3\target\thumbv7m-none-eabi\release\deps\libstable_deref_trait-b15d1735e73ff583.rlib: C:\Users\arshi\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stable_deref_trait-1.2.1\src\lib.rs
+
+D:\Vtu-Project\task3\target\thumbv7m-none-eabi\release\deps\libstable_deref_trait-b15d1735e73ff583.rmeta: C:\Users\arshi\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stable_deref_trait-1.2.1\src\lib.rs
+
+C:\Users\arshi\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\stable_deref_trait-1.2.1\src\lib.rs:
