@@ -1,0 +1,3 @@
+cargo:rustc-link-search=D:\vtu\MathCal\target\thumbv7m-none-eabi\debug\build\stm32f1-f042529e58d690ec\out
+cargo:rerun-if-changed=src/stm32f103/device.x
+cargo:rerun-if-changed=build.rs

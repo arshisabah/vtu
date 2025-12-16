@@ -1,0 +1,4 @@
+cargo:rustc-link-lib=static=cortex-m
+cargo:rustc-link-search=D:\vtu\MathCal\target\thumbv7m-none-eabi\debug\build\cortex-m-460ce2bc8df7ff18\out
+cargo:rustc-cfg=cortex_m
+cargo:rustc-cfg=armv7m
