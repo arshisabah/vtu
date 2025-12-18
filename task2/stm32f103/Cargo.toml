@@ -1,0 +1,21 @@
+[package]
+name = "stm32f103-uart"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.3"
+panic-halt = "0.2.0"
+stm32f1xx-hal = { version = "0.10.0", features = ["stm32f103", "rt"] }
+heapless = "0.8.0"
+nb = "1.1.0"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+debug = true
+
+[profile.dev]
+opt-level = 1
