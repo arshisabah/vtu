@@ -1,6 +1,8 @@
     Blocking waiting for file lock on package cache
-   0.115155000s  INFO prepare_target{force=false package_id=stm32f103-m66-gsm v0.1.0 (D:\Vtu-Project\task3) target="stm32f103-m66-gsm"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f103-m66-gsm v0.1.0 (D:\Vtu-Project\task3)/Check { test: true }/TargetInner { name: "stm32f103-m66-gsm", doc: true, ..: with_path("D:\\Vtu-Project\\task3\\src\\main.rs", Edition2021) }
-   0.115208200s  INFO prepare_target{force=false package_id=stm32f103-m66-gsm v0.1.0 (D:\Vtu-Project\task3) target="stm32f103-m66-gsm"}: cargo::core::compiler::fingerprint:     err: failed to read `D:\Vtu-Project\task3\target\thumbv7m-none-eabi\debug\.fingerprint\stm32f103-m66-gsm-4c5624e251d266a2\test-bin-stm32f103-m66-gsm`
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   0.231804700s  INFO prepare_target{force=false package_id=stm32f103-m66-gsm v0.1.0 (D:\vtu\task3) target="stm32f103-m66-gsm"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f103-m66-gsm v0.1.0 (D:\vtu\task3)/Check { test: true }/TargetInner { name: "stm32f103-m66-gsm", doc: true, ..: with_path("D:\\vtu\\task3\\src\\main.rs", Edition2021) }
+   0.231853400s  INFO prepare_target{force=false package_id=stm32f103-m66-gsm v0.1.0 (D:\vtu\task3) target="stm32f103-m66-gsm"}: cargo::core::compiler::fingerprint:     err: failed to read `D:\vtu\task3\target\thumbv7m-none-eabi\debug\.fingerprint\stm32f103-m66-gsm-4c5624e251d266a2\test-bin-stm32f103-m66-gsm`
 
 Caused by:
     The system cannot find the file specified. (os error 2)
@@ -27,5 +29,5 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-    Checking stm32f103-m66-gsm v0.1.0 (D:\Vtu-Project\task3)
+    Checking stm32f103-m66-gsm v0.1.0 (D:\vtu\task3)
 error: could not compile `stm32f103-m66-gsm` (bin "stm32f103-m66-gsm" test) due to 1 previous error

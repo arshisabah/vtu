@@ -2,8 +2,8 @@
     Blocking waiting for file lock on package cache
     Blocking waiting for file lock on package cache
     Blocking waiting for file lock on package cache
-   0.151951900s  INFO prepare_target{force=false package_id=stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5) target="stm32f103-gpio"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5)/Check { test: true }/TargetInner { name: "stm32f103-gpio", doc: true, ..: with_path("D:\\Vtu-Project\\task5\\src\\main.rs", Edition2021) }
-   0.152005100s  INFO prepare_target{force=false package_id=stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5) target="stm32f103-gpio"}: cargo::core::compiler::fingerprint:     err: failed to read `D:\Vtu-Project\task5\target\thumbv7m-none-eabi\debug\.fingerprint\stm32f103-gpio-89b8b0e81d78ab42\test-bin-stm32f103-gpio`
+   0.322216300s  INFO prepare_target{force=false package_id=stm32f103-gpio v0.1.0 (D:\vtu\task5) target="stm32f103-gpio"}: cargo::core::compiler::fingerprint: fingerprint error for stm32f103-gpio v0.1.0 (D:\vtu\task5)/Check { test: true }/TargetInner { name: "stm32f103-gpio", doc: true, ..: with_path("D:\\vtu\\task5\\src\\main.rs", Edition2021) }
+   0.322267600s  INFO prepare_target{force=false package_id=stm32f103-gpio v0.1.0 (D:\vtu\task5) target="stm32f103-gpio"}: cargo::core::compiler::fingerprint:     err: failed to read `D:\vtu\task5\target\thumbv7m-none-eabi\debug\.fingerprint\stm32f103-gpio-89b8b0e81d78ab42\test-bin-stm32f103-gpio`
 
 Caused by:
     The system cannot find the file specified. (os error 2)
@@ -30,5 +30,5 @@ Stack backtrace:
   18: git_midx_writer_dump
   19: BaseThreadInitThunk
   20: RtlUserThreadStart
-    Checking stm32f103-gpio v0.1.0 (D:\Vtu-Project\task5)
+    Checking stm32f103-gpio v0.1.0 (D:\vtu\task5)
 error: could not compile `stm32f103-gpio` (bin "stm32f103-gpio" test) due to 1 previous error; 1 warning emitted
