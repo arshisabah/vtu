@@ -30,10 +30,11 @@ fn main() -> ! {
         &clocks,
     );
     let (mut tx, mut rx) = serial.split();
-    let mut buffer: String<32> = String::new();
+    let mut buffer: String<64> = String::new();
     writeln!(tx, "STM32F103 Math Serial\r").ok();
-    writeln!(tx, "Send: <op> <num1> <num2>\r").ok();
+    writeln!(tx, "Send: <num> <op> <num> [<op> <num>]...\r").ok();
     writeln!(tx, "Ops: add, sub, mul, div\r").ok();
+    writeln!(tx, "Example: 2 + 3 - 1 * 3\r").ok();
     loop {
         if let Ok(byte) = rx.read() {
             if byte == b'\n' || byte == b'\r' {
@@ -54,24 +55,49 @@ fn main() -> ! {
     }
 }
 
-fn process_message(msg: &str) -> heapless::String<32> {
-    let mut out = heapless::String::<32>::new();
+fn process_message(msg: &str) -> heapless::String<64> {
+    let mut out = heapless::String::<64>::new();
     let mut parts = msg.trim().split_whitespace();
-    let op = parts.next();
-    let n1 = parts.next().and_then(|s| s.parse::<i32>().ok());
-    let n2 = parts.next().and_then(|s| s.parse::<i32>().ok());
-    match (op, n1, n2) {
-        (Some("add"), Some(a), Some(b)) => { write!(out, "{}", a + b).ok(); }
-        (Some("sub"), Some(a), Some(b)) => { write!(out, "{}", a - b).ok(); }
-        (Some("mul"), Some(a), Some(b)) => { write!(out, "{}", a * b).ok(); }
-        (Some("div"), Some(a), Some(b)) => {
-            if b == 0 {
-                write!(out, "Error: Div by 0").ok();
-            } else {
-                write!(out, "{}", a / b).ok();
+    
+    // Get the first number
+    let first = match parts.next().and_then(|s| s.parse::<i32>().ok()) {
+        Some(n) => n,
+        None => {
+            write!(out, "Invalid input").ok();
+            return out;
+        }
+    };
+    
+    let mut result = first;
+    
+    // Process operation-number pairs
+    while let Some(op) = parts.next() {
+        let num = match parts.next().and_then(|s| s.parse::<i32>().ok()) {
+            Some(n) => n,
+            None => {
+                write!(out, "Invalid input").ok();
+                return out;
+            }
+        };
+        
+        match op {
+            "+" => result = result + num,
+            "-" => result = result - num,
+            "*" => result = result * num,
+            "/" => {
+                if num == 0 {
+                    write!(out, "Error: Div by 0").ok();
+                    return out;
+                }
+                result = result / num;
+            }
+            _ => {
+                write!(out, "Invalid operation").ok();
+                return out;
             }
         }
-        _ => { write!(out, "Invalid input").ok(); }
     }
+    
+    write!(out,"Result: {}", result).ok();
     out
 }
