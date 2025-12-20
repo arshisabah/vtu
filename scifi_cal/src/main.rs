@@ -39,10 +39,13 @@ fn main() -> ! {
     );
     
     let (mut tx, mut rx) = serial.split();
-    let mut buffer: String<64> = String::new();
+    let mut buffer: String<128> = String::new();
     
     // Print welcome message
     writeln!(tx, "\r\nSci Calc Ready\r").ok();
+    writeln!(tx, "Format: <num> <op> <num> [<op> <num>]...\r").ok();
+    writeln!(tx, "Ops: +, -, *, /, pow\r").ok();
+    writeln!(tx, "Scientific: sin/cos/tan/sqrt/exp/ln/log <num>\r").ok();
     writeln!(tx, "> ").ok();
     
     loop {
@@ -74,127 +77,117 @@ fn main() -> ! {
 
 fn process_calculation(input: &str) -> heapless::String<64> {
     let mut result = heapless::String::<64>::new();
-    let mut parts = input.trim().split_whitespace();
+    let tokens: heapless::Vec<&str, 32> = input.split_whitespace().collect();
     
-    let operation = match parts.next() {
-        Some(op) => op,
+    if tokens.is_empty() {
+        write!(result, "Error: No input").ok();
+        return result;
+    }
+    
+    let mut idx = 0;
+    
+    // Parse first value (number or function)
+    let mut acc = match parse_value(&tokens, &mut idx) {
+        Some(v) => v,
         None => {
-            write!(result, "Error: No operation specified").ok();
+            write!(result, "Error: Invalid input").ok();
             return result;
         }
     };
     
-    match operation {
-        // Basic arithmetic operations (two operands)
-        "add" | "sub" | "mul" | "div" | "pow" => {
-            let a = match parse_number(parts.next()) {
-                Some(n) => n,
-                None => {
-                    write!(result, "Error: Invalid first operand").ok();
+    // Process operation-value pairs
+    while idx < tokens.len() {
+        let op = tokens[idx];
+        idx += 1;
+        
+        if idx >= tokens.len() {
+            write!(result, "Error: Missing operand").ok();
+            return result;
+        }
+        
+        let num = match parse_value(&tokens, &mut idx) {
+            Some(n) => n,
+            None => {
+                write!(result, "Error: Invalid operand").ok();
+                return result;
+            }
+        };
+        
+        match op {
+            "+" | "add" => acc += num,
+            "-" | "sub" => acc -= num,
+            "*" | "mul" => acc *= num,
+            "/" | "div" => {
+                if num == 0.0 {
+                    write!(result, "Error: Division by zero").ok();
                     return result;
                 }
-            };
-            
-            let b = match parse_number(parts.next()) {
-                Some(n) => n,
-                None => {
-                    write!(result, "Error: Invalid second operand").ok();
-                    return result;
-                }
-            };
-            
-            match operation {
-                "add" => { write!(result, "{:.4}", a + b).ok(); }
-                "sub" => { write!(result, "{:.4}", a - b).ok(); }
-                "mul" => { write!(result, "{:.4}", a * b).ok(); }
-                "div" => {
-                    if b == 0.0 {
-                        write!(result, "Error: Division by zero").ok();
-                    } else {
-                        write!(result, "{:.4}", a / b).ok();
-                    }
-                }
-                "pow" => { write!(result, "{:.4}", powf(a, b)).ok(); }
-                _ => unreachable!(),
+                acc /= num;
             }
-        }
-        
-        // Trigonometric functions (one operand)
-        "sin" => {
-            if let Some(x) = parse_number(parts.next()) {
-                write!(result, "{:.4}", sinf(x)).ok();
-            } else {
-                write!(result, "Error: Invalid operand").ok();
+            "pow" => acc = powf(acc, num),
+            _ => {
+                write!(result, "Error: Unknown operation").ok();
+                return result;
             }
-        }
-        
-        "cos" => {
-            if let Some(x) = parse_number(parts.next()) {
-                write!(result, "{:.4}", cosf(x)).ok();
-            } else {
-                write!(result, "Error: Invalid operand").ok();
-            }
-        }
-        
-        "tan" => {
-            if let Some(x) = parse_number(parts.next()) {
-                write!(result, "{:.4}", tanf(x)).ok();
-            } else {
-                write!(result, "Error: Invalid operand").ok();
-            }
-        }
-        
-        // Mathematical functions
-        "sqrt" => {
-            if let Some(x) = parse_number(parts.next()) {
-                if x < 0.0 {
-                    write!(result, "Error: Negative sqrt").ok();
-                } else {
-                    write!(result, "{:.4}", sqrtf(x)).ok();
-                }
-            } else {
-                write!(result, "Error: Invalid operand").ok();
-            }
-        }
-        
-        "exp" => {
-            if let Some(x) = parse_number(parts.next()) {
-                write!(result, "{:.4}", expf(x)).ok();
-            } else {
-                write!(result, "Error: Invalid operand").ok();
-            }
-        }
-        
-        "ln" => {
-            if let Some(x) = parse_number(parts.next()) {
-                if x <= 0.0 {
-                    write!(result, "Error: Log of non-positive").ok();
-                } else {
-                    write!(result, "{:.4}", logf(x)).ok();
-                }
-            } else {
-                write!(result, "Error: Invalid operand").ok();
-            }
-        }
-        
-        "log" => {
-            if let Some(x) = parse_number(parts.next()) {
-                if x <= 0.0 {
-                    write!(result, "Error: Log of non-positive").ok();
-                } else {
-                    write!(result, "{:.4}", log10f(x)).ok();
-                }
-            } else {
-                write!(result, "Error: Invalid operand").ok();
-            }
-        }
-        
-        _ => {
-            write!(result, "Error: Unknown operation '{}'", operation).ok();
         }
     }
     
+    write!(result, "{:.4}", acc).ok();
     result
+}
+
+// Parse a value which can be a number or a function call
+fn parse_value(tokens: &heapless::Vec<&str, 32>, idx: &mut usize) -> Option<f32> {
+    if *idx >= tokens.len() {
+        return None;
+    }
+    
+    let token = tokens[*idx];
+    *idx += 1;
+    
+    // Check if it's a scientific function
+    match token {
+        "sin" | "cos" | "tan" | "sqrt" | "exp" | "ln" | "log" => {
+            if *idx >= tokens.len() {
+                return None;
+            }
+            let operand = parse_number(Some(tokens[*idx]))?;
+            *idx += 1;
+            
+            match token {
+                "sin" => Some(sinf(operand)),
+                "cos" => Some(cosf(operand)),
+                "tan" => Some(tanf(operand)),
+                "sqrt" => {
+                    if operand < 0.0 {
+                        None
+                    } else {
+                        Some(sqrtf(operand))
+                    }
+                }
+                "exp" => Some(expf(operand)),
+                "ln" => {
+                    if operand <= 0.0 {
+                        None
+                    } else {
+                        Some(logf(operand))
+                    }
+                }
+                "log" => {
+                    if operand <= 0.0 {
+                        None
+                    } else {
+                        Some(log10f(operand))
+                    }
+                }
+                _ => None,
+            }
+        }
+        _ => {
+            // Try to parse as number
+            parse_number(Some(token))
+        }
+    }
 }
 
 fn parse_number(s: Option<&str>) -> Option<f32> {
