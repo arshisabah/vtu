@@ -43,9 +43,9 @@ fn main() -> ! {
     
     // Print welcome message
     writeln!(tx, "\r\nSci Calc Ready\r").ok();
-    writeln!(tx, "Format: <num> <op> <num> [<op> <num>]...\r").ok();
-    writeln!(tx, "Ops: +, -, *, /, pow\r").ok();
-    writeln!(tx, "Scientific: sin/cos/tan/sqrt/exp/ln/log <num>\r").ok();
+    writeln!(tx, "Format: expr with (), +, -, *, /, pow\r").ok();
+    writeln!(tx, "Functions: sin/cos/tan/sqrt/exp/ln/log/fact\r").ok();
+    writeln!(tx, "Precedence: () > pow > */  > +-\r").ok();
     writeln!(tx, "> ").ok();
     
     loop {
@@ -77,7 +77,7 @@ fn main() -> ! {
 
 fn process_calculation(input: &str) -> heapless::String<64> {
     let mut result = heapless::String::<64>::new();
-    let tokens: heapless::Vec<&str, 32> = input.split_whitespace().collect();
+    let tokens: heapless::Vec<&str, 64> = tokenize(input);
     
     if tokens.is_empty() {
         write!(result, "Error: No input").ok();
@@ -86,73 +86,143 @@ fn process_calculation(input: &str) -> heapless::String<64> {
     
     let mut idx = 0;
     
-    // Parse first value (number or function)
-    let mut acc = match parse_value(&tokens, &mut idx) {
-        Some(v) => v,
+    match parse_expression(&tokens, &mut idx) {
+        Some(value) => {
+            if idx < tokens.len() {
+                write!(result, "Error: Unexpected token").ok();
+            } else {
+                write!(result, "{:.4}", value).ok();
+            }
+        }
         None => {
-            write!(result, "Error: Invalid input").ok();
-            return result;
-        }
-    };
-    
-    // Process operation-value pairs
-    while idx < tokens.len() {
-        let op = tokens[idx];
-        idx += 1;
-        
-        if idx >= tokens.len() {
-            write!(result, "Error: Missing operand").ok();
-            return result;
-        }
-        
-        let num = match parse_value(&tokens, &mut idx) {
-            Some(n) => n,
-            None => {
-                write!(result, "Error: Invalid operand").ok();
-                return result;
-            }
-        };
-        
-        match op {
-            "+" | "add" => acc += num,
-            "-" | "sub" => acc -= num,
-            "*" | "mul" => acc *= num,
-            "/" | "div" => {
-                if num == 0.0 {
-                    write!(result, "Error: Division by zero").ok();
-                    return result;
-                }
-                acc /= num;
-            }
-            "pow" => acc = powf(acc, num),
-            _ => {
-                write!(result, "Error: Unknown operation").ok();
-                return result;
-            }
+            write!(result, "Error: Invalid expression").ok();
         }
     }
     
-    write!(result, "{:.4}", acc).ok();
     result
 }
 
-// Parse a value which can be a number or a function call
-fn parse_value(tokens: &heapless::Vec<&str, 32>, idx: &mut usize) -> Option<f32> {
+// Tokenize input, handling parentheses as separate tokens
+fn tokenize(input: &str) -> heapless::Vec<&str, 64> {
+    let mut tokens: heapless::Vec<&str, 64> = heapless::Vec::new();
+    let mut start = 0;
+    let bytes = input.as_bytes();
+    let mut i = 0;
+    
+    while i < bytes.len() {
+        if bytes[i].is_ascii_whitespace() {
+            if start < i {
+                if let Ok(token) = core::str::from_utf8(&bytes[start..i]) {
+                    tokens.push(token).ok();
+                }
+            }
+            start = i + 1;
+        } else if bytes[i] == b'(' || bytes[i] == b')' {
+            if start < i {
+                if let Ok(token) = core::str::from_utf8(&bytes[start..i]) {
+                    tokens.push(token).ok();
+                }
+            }
+            if let Ok(token) = core::str::from_utf8(&bytes[i..i+1]) {
+                tokens.push(token).ok();
+            }
+            start = i + 1;
+        }
+        i += 1;
+    }
+    
+    if start < bytes.len() {
+        if let Ok(token) = core::str::from_utf8(&bytes[start..]) {
+            tokens.push(token).ok();
+        }
+    }
+    
+    tokens
+}
+
+// Parse expression: handles + and - (lowest precedence)
+fn parse_expression(tokens: &heapless::Vec<&str, 64>, idx: &mut usize) -> Option<f32> {
+    let mut left = parse_term(tokens, idx)?;
+    
+    while *idx < tokens.len() {
+        let op = tokens[*idx];
+        match op {
+            "+" | "-" => {
+                *idx += 1;
+                let right = parse_term(tokens, idx)?;
+                left = if op == "+" { left + right } else { left - right };
+            }
+            _ => break,
+        }
+    }
+    
+    Some(left)
+}
+
+// Parse term: handles * and / (medium precedence)
+fn parse_term(tokens: &heapless::Vec<&str, 64>, idx: &mut usize) -> Option<f32> {
+    let mut left = parse_power(tokens, idx)?;
+    
+    while *idx < tokens.len() {
+        let op = tokens[*idx];
+        match op {
+            "*" | "/" => {
+                *idx += 1;
+                let right = parse_power(tokens, idx)?;
+                if op == "*" {
+                    left *= right;
+                } else {
+                    if right == 0.0 {
+                        return None;
+                    }
+                    left /= right;
+                }
+            }
+            _ => break,
+        }
+    }
+    
+    Some(left)
+}
+
+// Parse power: handles pow (highest precedence, right-associative)
+fn parse_power(tokens: &heapless::Vec<&str, 64>, idx: &mut usize) -> Option<f32> {
+    let base = parse_primary(tokens, idx)?;
+    
+    if *idx < tokens.len() && tokens[*idx] == "pow" {
+        *idx += 1;
+        let exponent = parse_power(tokens, idx)?; // Right-associative
+        Some(powf(base, exponent))
+    } else {
+        Some(base)
+    }
+}
+
+// Parse primary: numbers, functions, and parentheses
+fn parse_primary(tokens: &heapless::Vec<&str, 64>, idx: &mut usize) -> Option<f32> {
     if *idx >= tokens.len() {
         return None;
     }
     
     let token = tokens[*idx];
+    
+    // Handle parentheses
+    if token == "(" {
+        *idx += 1;
+        let value = parse_expression(tokens, idx)?;
+        if *idx >= tokens.len() || tokens[*idx] != ")" {
+            return None; // Missing closing parenthesis
+        }
+        *idx += 1;
+        return Some(value);
+    }
+    
     *idx += 1;
     
     // Check if it's a scientific function
     match token {
-        "sin" | "cos" | "tan" | "sqrt" | "exp" | "ln" | "log" => {
-            if *idx >= tokens.len() {
-                return None;
-            }
-            let operand = parse_number(Some(tokens[*idx]))?;
-            *idx += 1;
+        "sin" | "cos" | "tan" | "sqrt" | "exp" | "ln" | "log" | "fact" => {
+            let operand = parse_primary(tokens, idx)?;
             
             match token {
                 "sin" => Some(sinf(operand)),
@@ -180,6 +250,13 @@ fn parse_value(tokens: &heapless::Vec<&str, 32>, idx: &mut usize) -> Option<f32>
                         Some(log10f(operand))
                     }
                 }
+                "fact" => {
+                    if operand < 0.0 || operand > 12.0 {
+                        None // Factorial only valid for 0-12 (stays within f32 range)
+                    } else {
+                        Some(factorial(operand as u32))
+                    }
+                }
                 _ => None,
             }
         }
@@ -192,4 +269,16 @@ fn parse_value(tokens: &heapless::Vec<&str, 32>, idx: &mut usize) -> Option<f32>
 
 fn parse_number(s: Option<&str>) -> Option<f32> {
     s?.parse::<f32>().ok()
+}
+
+fn factorial(n: u32) -> f32 {
+    if n == 0 || n == 1 {
+        1.0
+    } else {
+        let mut result = 1u32;
+        for i in 2..=n {
+            result = result.saturating_mul(i);
+        }
+        result as f32
+    }
 }

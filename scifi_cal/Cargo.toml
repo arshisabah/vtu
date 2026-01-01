@@ -13,10 +13,15 @@ nb = "1.1.0"
 libm = "0.2.8"
 
 [profile.release]
-opt-level = "z"
-lto = true
-codegen-units = 1
-debug = true
+opt-level = "z"        # Optimize for size
+lto = true             # Link-time optimization
+codegen-units = 1      # Better optimization
+debug = false          # Remove debug info in release
+strip = true           # Strip symbols
+panic = "abort"        # Smaller panic handler
+overflow-checks = false # Disable overflow checks for smaller code
 
 [profile.dev]
 opt-level = 1
+debug = true
+lto = false
